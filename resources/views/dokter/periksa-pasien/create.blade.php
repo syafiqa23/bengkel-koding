@@ -30,11 +30,21 @@
                         @foreach ($obats as $obat)
                             <option value="{{ $obat->id }}"
                                 data-nama="{{ $obat->nama_obat }}"
-                                data-harga="{{ $obat->harga }}">
-                                {{ $obat->nama_obat }} - Rp{{ number_format($obat->harga) }}
+                                data-harga="{{ $obat->harga }}"
+                                data-stok="{{ $obat->stok }}"
+                                @disabled($obat->isStokHabis())>
+                                {{ $obat->nama_obat }} - Rp{{ number_format($obat->harga) }} - Stok: {{ $obat->stok }}
+                                @if($obat->isStokHabis())
+                                    (Habis)
+                                @elseif($obat->isStokMenipis())
+                                    (Stok menipis)
+                                @endif
                             </option>
                         @endforeach
                     </select>
+                    @error('obat_json')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Obat Terpilih --}}
@@ -100,10 +110,12 @@
             const id = selectedOption.value;
             const nama = selectedOption.dataset.nama;
             const harga = parseInt(selectedOption.dataset.harga || 0);
+            const stok = parseInt(selectedOption.dataset.stok || 0);
 
             if (!id || daftarObat.some(o => o.id == id)) return;
+            if (stok <= 0) return;
 
-            daftarObat.push({ id, nama, harga });
+            daftarObat.push({ id, nama, harga, stok });
             renderObat();
             selectObat.selectedIndex = 0;
         });
@@ -118,7 +130,7 @@
                 const item = document.createElement('li');
                 item.className = 'flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700';
                 item.innerHTML = `
-                    <span>${obat.nama} — <span class="font-semibold">Rp ${obat.harga.toLocaleString()}</span></span>
+                    <span>${obat.nama} - <span class="font-semibold">Rp ${obat.harga.toLocaleString()}</span> <span class="text-xs text-slate-400">(stok ${obat.stok})</span></span>
                     <button type="button"
                         onclick="hapusObat(${index})"
                         class="btn btn-sm bg-red-500 hover:bg-red-600 text-white border-none rounded-lg px-3">

@@ -12,10 +12,22 @@ class Obat extends Model
         'nama_obat',
         'kemasan',
         'harga',
+        'stok',
+        'stok_minimum',
     ];
 
     public function detailPeriksas()
     {
         return $this->hasMany(DetailPeriksa::class, 'id_obat');
+    }
+
+    public function isStokHabis(): bool
+    {
+        return $this->stok <= 0;
+    }
+
+    public function isStokMenipis(): bool
+    {
+        return $this->stok > 0 && $this->stok <= $this->stok_minimum;
     }
 }

@@ -54,7 +54,7 @@
                 </div>
 
                 {{-- Harga --}}
-                <div class="mb-8">
+                <div class="mb-6">
                     <label class="block text-sm font-semibold text-slate-700 mb-1">
                         Harga <span class="text-red-500">*</span>
                     </label>
@@ -72,6 +72,34 @@
                     @error('harga')
                     <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">
+                            Stok Awal <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="stok" value="{{ old('stok', 0) }}" min="0" step="1"
+                            class="w-full px-4 py-2 border-2 rounded-lg p-2
+                                      focus:border-primary focus:outline-none
+                                      @error('stok') border-red-500 @enderror" required>
+                        @error('stok')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">
+                            Batas Stok Menipis <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="stok_minimum" value="{{ old('stok_minimum', 10) }}" min="0" step="1"
+                            class="w-full px-4 py-2 border-2 rounded-lg p-2
+                                      focus:border-primary focus:outline-none
+                                      @error('stok_minimum') border-red-500 @enderror" required>
+                        @error('stok_minimum')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 {{-- Buttons --}}

@@ -28,6 +28,8 @@
                             <th class="px-6 py-4">Nama Obat</th>
                             <th class="px-6 py-4">Kemasan</th>
                             <th class="px-6 py-4">Harga</th>
+                            <th class="px-6 py-4">Stok</th>
+                            <th class="px-6 py-4">Kelola Stok</th>
                             <th class="px-6 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -50,6 +52,42 @@
 
                             <td class="px-6 py-4 font-semibold text-slate-800">
                                 Rp {{ number_format($obat->harga, 0, ',', '.') }}
+                            </td>
+
+                            <td class="px-6 py-4">
+                                @if($obat->isStokHabis())
+                                <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-600">
+                                    <i class="fas fa-circle-exclamation"></i>
+                                    Habis
+                                </span>
+                                @elseif($obat->isStokMenipis())
+                                <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-600">
+                                    <i class="fas fa-triangle-exclamation"></i>
+                                    Menipis: {{ $obat->stok }}
+                                </span>
+                                @else
+                                <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-600">
+                                    <i class="fas fa-circle-check"></i>
+                                    {{ $obat->stok }}
+                                </span>
+                                @endif
+                                <div class="text-[11px] text-slate-400 mt-1">Batas: {{ $obat->stok_minimum }}</div>
+                            </td>
+
+                            <td class="px-6 py-4">
+                                <form action="{{ route('obat.update-stok', $obat->id) }}" method="POST" class="flex flex-wrap items-center gap-2">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="tipe" class="select select-bordered select-sm rounded-lg">
+                                        <option value="tambah">Tambah</option>
+                                        <option value="kurang">Kurangi</option>
+                                    </select>
+                                    <input type="number" name="jumlah" min="1" value="1"
+                                        class="input input-bordered input-sm w-20 rounded-lg">
+                                    <button type="submit" class="btn btn-sm bg-[#2d4499] hover:bg-[#1e2d6b] text-white border-none rounded-lg">
+                                        Simpan
+                                    </button>
+                                </form>
                             </td>
 
                             <td class="px-6 py-4 text-right">
@@ -85,7 +123,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="text-center py-12 text-slate-400">
+                            <td colspan="6" class="text-center py-12 text-slate-400">
                                 <i class="fas fa-inbox text-3xl mb-3 block"></i>
                                 Belum ada data obat
                             </td>

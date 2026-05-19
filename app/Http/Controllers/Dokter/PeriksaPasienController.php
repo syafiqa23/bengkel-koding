@@ -9,6 +9,8 @@ use App\Models\Obat;
 use App\Models\Periksa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PeriksaPasienController extends Controller
 {
@@ -28,7 +30,7 @@ class PeriksaPasienController extends Controller
 
     public function create($id)
     {
-        $obats = Obat::all();
+        $obats = Obat::orderBy('nama_obat')->get();
         return view('dokter.periksa-pasien.create', compact('obats', 'id'));
     }
 
@@ -40,22 +42,51 @@ class PeriksaPasienController extends Controller
             'biaya_periksa' => 'required|integer',
         ]);
 
-        $obatIds = json_decode($request->obat_json, true);
+        $obatIds = collect(json_decode($request->obat_json, true))
+            ->filter()
+            ->unique()
+            ->values();
 
-        $periksa = Periksa::create([
-            'id_daftar_poli' => $request->id_daftar_poli,
-            'tgl_periksa' => now(),
-            'catatan' => $request->catatan,
-            'biaya_periksa' => $request->biaya_periksa + 150000,
-        ]);
-
-        foreach ($obatIds as $idObat) {
-            DetailPeriksa::create([
-                'id_periksa' => $periksa->id,
-                'id_obat' => $idObat,
+        if ($obatIds->isEmpty()) {
+            throw ValidationException::withMessages([
+                'obat_json' => 'Pilih minimal satu obat.',
             ]);
         }
 
-        return redirect()->route('periksa-pasien.index')->with('success', 'Data periksa berhasil disimpan.');
+        DB::transaction(function () use ($request, $obatIds) {
+            $obats = Obat::whereIn('id', $obatIds)->lockForUpdate()->get();
+
+            if ($obats->count() !== $obatIds->count()) {
+                throw ValidationException::withMessages([
+                    'obat_json' => 'Data obat tidak valid. Silakan pilih ulang obat.',
+                ]);
+            }
+
+            $obatHabis = $obats->first(fn ($obat) => $obat->stok <= 0);
+
+            if ($obatHabis) {
+                throw ValidationException::withMessages([
+                    'obat_json' => "Stok {$obatHabis->nama_obat} habis. Silakan pilih obat lain.",
+                ]);
+            }
+
+            $periksa = Periksa::create([
+                'id_daftar_poli' => $request->id_daftar_poli,
+                'tgl_periksa' => now(),
+                'catatan' => $request->catatan,
+                'biaya_periksa' => $obats->sum('harga') + 150000,
+            ]);
+
+            foreach ($obats as $obat) {
+                DetailPeriksa::create([
+                    'id_periksa' => $periksa->id,
+                    'id_obat' => $obat->id,
+                ]);
+
+                $obat->decrement('stok');
+            }
+        });
+
+        return redirect()->route('periksa-pasien.index')->with('success', 'Data periksa berhasil disimpan dan stok obat otomatis dikurangi.');
     }
 }

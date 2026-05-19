@@ -25,12 +25,16 @@ class ObatController extends Controller
             'nama_obat' => 'required|string',
             'kemasan' => 'required|string',
             'harga' => 'required|integer',
+            'stok' => 'required|integer|min:0',
+            'stok_minimum' => 'required|integer|min:0',
         ]);
 
         Obat::create([
             'nama_obat' => $request->nama_obat,
             'kemasan' => $request->kemasan,
-            'harga' => $request->harga
+            'harga' => $request->harga,
+            'stok' => $request->stok,
+            'stok_minimum' => $request->stok_minimum
         ]);
 
         return redirect()->route('obat.index')
@@ -52,13 +56,17 @@ class ObatController extends Controller
             'nama_obat' => 'required|string',
             'kemasan' => 'nullable|string',
             'harga' => 'required|integer',
+            'stok' => 'required|integer|min:0',
+            'stok_minimum' => 'required|integer|min:0',
         ]);
 
         $obat = Obat::findOrFail($id);
         $obat->update([
             'nama_obat' => $request->nama_obat,
             'kemasan' => $request->kemasan,
-            'harga' => $request->harga
+            'harga' => $request->harga,
+            'stok' => $request->stok,
+            'stok_minimum' => $request->stok_minimum
         ]);
 
         return redirect()->route('obat.index')
@@ -74,5 +82,28 @@ class ObatController extends Controller
         return redirect()->route('obat.index')
             ->with('message', 'Data Obat berhasil di Hapus')
             ->with('type', 'success');
+    }
+
+    public function updateStok(Request $request, string $id)
+    {
+        $request->validate([
+            'tipe' => 'required|in:tambah,kurang',
+            'jumlah' => 'required|integer|min:1',
+        ]);
+
+        $obat = Obat::findOrFail($id);
+
+        if ($request->tipe === 'kurang' && $request->jumlah > $obat->stok) {
+            return redirect()->route('obat.index')
+                ->with('error', 'Stok obat tidak mencukupi untuk dikurangi.');
+        }
+
+        $obat->stok = $request->tipe === 'tambah'
+            ? $obat->stok + $request->jumlah
+            : $obat->stok - $request->jumlah;
+        $obat->save();
+
+        return redirect()->route('obat.index')
+            ->with('success', 'Stok obat berhasil diperbarui.');
     }
 }

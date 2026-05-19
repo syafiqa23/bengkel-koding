@@ -50,5 +50,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::resource('polis', PoliController::class)->except(['show']);
     Route::resource('dokter', DokterController::class);
     Route::resource('pasien', PasienController::class);
+    Route::patch('obat/{obat}/stok', [ObatController::class, 'updateStok'])->name('obat.update-stok');
     Route::resource('obat', ObatController::class);
 });

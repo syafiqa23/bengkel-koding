@@ -11,7 +11,7 @@
         <h2 class="text-2xl font-bold text-slate-800">
             Tambah Poli
         </h2>
-    </div>
+    </div> 
 
     {{-- Card Form --}}
     <div class="card bg-base-100 shadow-md rounded-2xl border border-slate-200">

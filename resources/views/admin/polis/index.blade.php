@@ -30,7 +30,7 @@
         <div class="overflow-x-auto">
             <table class="w-full">
 
-                {{-- Head --}}
+                {{-- Head --}} 
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
                         <th class="px-6 py-4 text-left">Nama Poli</th>
@@ -98,4 +98,4 @@
 
     </div>
 
-</x-layouts.app>
+</x-layouts.app> 
